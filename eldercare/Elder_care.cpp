@@ -73,7 +73,7 @@ void menu::menuPrincipal()
         cout << "6. Listar clientes" << endl;
         cout << "7. Buscar cliente" << endl;
         cout << "8. Salir" << endl;
-        cout << "Select an option: ";
+        cout << "Select an option please: ";
         cin >> opcion;
         cin.ignore(); // Limpia el buffer para que no afecte a los getline posteriores
 
