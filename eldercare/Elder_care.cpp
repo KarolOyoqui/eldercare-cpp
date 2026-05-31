@@ -2,8 +2,9 @@
 #include <fstream>
 #include <string>
 #include <stdlib.h>
+#include <iomanip>
+#include <sstream>
 
-// Clear screen setup depending on the operating system
 #ifdef _WIN32
 #define CLEAR "cls"
 #elif defined(unix)||defined(__unix__)||defined(__unix)||defined(__APPLE__)||defined(__MACH__)
@@ -17,7 +18,7 @@ using namespace std;
 class Menu
 {
 private:
-    string code; // Variable used to handle the ID/Code of records
+    string code;
     string firstName;
     string lastName;
     string birthDate;
@@ -30,6 +31,8 @@ private:
     string currentDate;
     string idUserAdmin;
     string idRole;
+
+    string generateID(string filename, char prefix);
 
 public:
     void registerClient();
@@ -54,7 +57,7 @@ void checkFiles();
 
 int main()
 {
-    checkFiles(); // Creates files if they do not exist
+    checkFiles();
     Menu app;
     app.mainMenu();
     return 0;
@@ -82,115 +85,80 @@ void Menu::mainMenu()
         cout << "11. Exit" << endl;
         cout << "Select an option please: ";
         cin >> option;
-        cin.ignore(); // Clears the buffer to avoid skipping subsequent getlines
+        cin.ignore();
 
         switch (option)
         {
-        case 1:
-            registerClient();
-            break;
-        case 2:
-            registerEmployee();
-            break;
-        case 3:
-            removeClient();
-            break;
-        case 4:
-            removeEmployee();
-            break;
-        case 5:
-            modifyClient();
-            break;
-        case 6:
-            modifyEmployee();
-            break;
-        case 7:
-            listClients();
-            break;
-        case 8:
-            listEmployees();
-            break;
-        case 9:
-            searchClient();
-            break;
-        case 10:
-            searchEmployee();
-            break;
-        case 11:
-            cout << "Exiting the system..." << endl;
-            break;
-        default:
-            showError();
-            pause();
-            break;
+        case 1: registerClient(); break;
+        case 2: registerEmployee(); break;
+        case 3: removeClient(); break;
+        case 4: removeEmployee(); break;
+        case 5: modifyClient(); break;
+        case 6: modifyEmployee(); break;
+        case 7: listClients(); break;
+        case 8: listEmployees(); break;
+        case 9: searchClient(); break;
+        case 10: searchEmployee(); break;
+        case 11: cout << "Exiting the system..." << endl; break;
+        default: showError(); pause(); break;
         }
     } while (option != 11);
+}
+
+// ID Generator (Crash-proof)
+string Menu::generateID(string filename, char prefix)
+{
+    ifstream fileReader(filename, ios::in);
+    string lastID = "";
+    string currentLine;
+
+    if (!fileReader.is_open() || fileReader.peek() == ifstream::traits_type::eof()) {
+        return string(1, prefix) + "0001";
+    }
+
+    while (getline(fileReader, currentLine))
+    {
+        if (currentLine.empty()) continue;
+
+        lastID = currentLine;
+
+        for (int i = 0; i < 10; ++i) {
+            string dummy;
+            getline(fileReader, dummy);
+        }
+    }
+    fileReader.close();
+
+    if (lastID.length() < 2) {
+        return string(1, prefix) + "0001";
+    }
+
+    try {
+        string numberPart = lastID.substr(1);
+        int number = stoi(numberPart);
+        number++;
+
+        stringstream ss;
+        ss << prefix << setfill('0') << setw(4) << number;
+        return ss.str();
+    }
+    catch (...) {
+        return string(1, prefix) + "0001";
+    }
 }
 
 void Menu::registerClient()
 {
     ofstream fileOutput;
-    ifstream fileInputCheck;
-    string auxCode;
-    bool isDuplicate = false;
-
     fileOutput.open("clients.txt", ios::app);
-    fileInputCheck.open("clients.txt", ios::in);
 
-    if (fileOutput.is_open() && fileInputCheck.is_open())
+    if (fileOutput.is_open())
     {
+        code = generateID("clients.txt", 'E');
+
         system(CLEAR);
         cout << "\t\t\t\t*** Register a Client ***\t\t\t\t\n\n";
-        cout << "Enter the client code: ";
-        getline(cin, auxCode);
-
-        if (auxCode == "") {
-            do {
-                cout << "Invalid client code! Please try again: ";
-                getline(cin, auxCode);
-            } while (auxCode == "");
-        }
-
-        // Loop to prevent duplicate codes
-        do {
-            fileInputCheck.seekg(0, ios::beg);
-            isDuplicate = false;
-            while (getline(fileInputCheck, code))
-            {
-                getline(fileInputCheck, firstName);
-                getline(fileInputCheck, lastName);
-                getline(fileInputCheck, birthDate);
-                getline(fileInputCheck, address);
-                getline(fileInputCheck, state);
-                getline(fileInputCheck, city);
-                getline(fileInputCheck, postalCode);
-                getline(fileInputCheck, phoneNumber);
-                getline(fileInputCheck, emergencyPhoneNumber);
-                getline(fileInputCheck, currentDate);
-
-                if (code == auxCode)
-                {
-                    isDuplicate = true;
-                    cout << "\n\nA client with this code already exists!\n\n";
-                    cout << "The associated client is: " << firstName << " " << lastName << "\n\n";
-                    cout << "Enter a valid code: ";
-                    getline(cin, auxCode);
-
-                    if (auxCode == "") {
-                        do {
-                            cout << "\nInvalid code! Please try again: ";
-                            getline(cin, auxCode);
-                        } while (auxCode == "");
-                    }
-                    break;
-                }
-            }
-        } while (isDuplicate == true);
-
-        code = auxCode;
-        system(CLEAR);
-        cout << "\t\t\t\t*** Register a Client ***\t\t\t\t\n\n";
-        cout << "Client Code: " << code << "\n\n";
+        cout << "Auto-generated Client Code: " << code << "\n\n";
 
         cout << "Enter client's first name: "; getline(cin, firstName);
         cout << "Enter client's last name: "; getline(cin, lastName);
@@ -203,12 +171,11 @@ void Menu::registerClient()
         cout << "Enter emergency phone number: "; getline(cin, emergencyPhoneNumber);
         cout << "Enter registration date (DD/MM/YYYY): "; getline(cin, currentDate);
 
-        // Structured writing into the text file
         fileOutput << code << endl << firstName << endl << lastName << endl << birthDate << endl
             << address << endl << state << endl << city << endl << postalCode << endl
             << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl;
 
-        cout << "\nRegistration completed successfully.\n\n";
+        cout << "\nRegistration completed successfully. ID assigned: " << code << "\n\n";
     }
     else
     {
@@ -216,72 +183,21 @@ void Menu::registerClient()
     }
 
     fileOutput.close();
-    fileInputCheck.close();
     pause();
 }
 
 void Menu::registerEmployee()
 {
     ofstream fileOutput;
-    ifstream fileInputCheck;
-    string auxCode;
-    bool isDuplicate = false;
-
     fileOutput.open("employees.txt", ios::app);
-    fileInputCheck.open("employees.txt", ios::in);
 
-    if (fileOutput.is_open() && fileInputCheck.is_open())
+    if (fileOutput.is_open())
     {
+        code = generateID("employees.txt", 'T');
+
         system(CLEAR);
         cout << "\t\t\t\t*** Register an Employee ***\t\t\t\t\n\n";
-        cout << "Enter the employee code: ";
-        getline(cin, auxCode);
-
-        if (auxCode == "") {
-            do {
-                cout << "Invalid code! Please try again: ";
-                getline(cin, auxCode);
-            } while (auxCode == "");
-        }
-
-        do {
-            fileInputCheck.seekg(0, ios::beg);
-            isDuplicate = false;
-            while (getline(fileInputCheck, code))
-            {
-                getline(fileInputCheck, firstName);
-                getline(fileInputCheck, lastName);
-                getline(fileInputCheck, birthDate);
-                getline(fileInputCheck, address);
-                getline(fileInputCheck, state);
-                getline(fileInputCheck, city);
-                getline(fileInputCheck, postalCode);
-                getline(fileInputCheck, phoneNumber);
-                getline(fileInputCheck, idUserAdmin);
-                getline(fileInputCheck, idRole);
-
-                if (code == auxCode)
-                {
-                    isDuplicate = true;
-                    cout << "\n\nAn employee with this code already exists!\n\n";
-                    cout << "The associated employee is: " << firstName << " " << lastName << "\n\n";
-                    cout << "Enter a valid code: ";
-                    getline(cin, auxCode);
-                    if (auxCode == "") {
-                        do {
-                            cout << "\nInvalid code! Please try again: ";
-                            getline(cin, auxCode);
-                        } while (auxCode == "");
-                    }
-                    break;
-                }
-            }
-        } while (isDuplicate == true);
-
-        code = auxCode;
-        system(CLEAR);
-        cout << "\t\t\t\t*** Register an Employee ***\t\t\t\t\n\n";
-        cout << "Employee Code: " << code << "\n\n";
+        cout << "Auto-generated Employee Code: " << code << "\n\n";
 
         cout << "Enter employee's first name: "; getline(cin, firstName);
         cout << "Enter employee's last name: "; getline(cin, lastName);
@@ -291,14 +207,17 @@ void Menu::registerEmployee()
         cout << "Enter City: "; getline(cin, city);
         cout << "Enter postal code: "; getline(cin, postalCode);
         cout << "Enter phone number: "; getline(cin, phoneNumber);
-        cout << "Enter Admin/Manager ID in charge: "; getline(cin, idUserAdmin);
-        cout << "Enter assigned Role ID: "; getline(cin, idRole);
+
+        idUserAdmin = "A1234";
+        cout << "Admin/Manager ID in charge automatically set to: " << idUserAdmin << "\n";
+
+        cout << "Enter assigned Role ID (e.g. Nurse, Doctor, Cleaner): "; getline(cin, idRole);
 
         fileOutput << code << endl << firstName << endl << lastName << endl << birthDate << endl
             << address << endl << state << endl << city << endl << postalCode << endl
             << phoneNumber << endl << idUserAdmin << endl << idRole << endl;
 
-        cout << "\nRegistration completed successfully.\n\n";
+        cout << "\nRegistration completed successfully. ID assigned: " << code << "\n\n";
     }
     else
     {
@@ -306,7 +225,6 @@ void Menu::registerEmployee()
     }
 
     fileOutput.close();
-    fileInputCheck.close();
     pause();
 }
 
@@ -323,7 +241,6 @@ void Menu::removeClient()
         system(CLEAR);
         cout << "\t\t\t\t*** Remove a Client ***\t\t\t\t\n\n";
 
-        // Check if the file is empty
         if (fileReader.peek() == ifstream::traits_type::eof()) {
             cout << "No clients currently registered in the system.\n";
             fileReader.close();
@@ -337,6 +254,8 @@ void Menu::removeClient()
 
         while (getline(fileReader, code))
         {
+            if (code.empty()) continue;
+
             getline(fileReader, firstName);
             getline(fileReader, lastName);
             getline(fileReader, birthDate);
@@ -377,9 +296,10 @@ void Menu::removeClient()
         fileReader.close();
         fileAuxiliary.close();
 
-        // Cast to (void) to ignore the return value and prevent C6031 warnings
-        (void)remove("clients.txt");
-        (void)rename("auxiliary.txt", "clients.txt");
+        // Fix C6031 warnings
+        bool status;
+        status = (remove("clients.txt") == 0);
+        status = (rename("auxiliary.txt", "clients.txt") == 0);
 
         if (!found) {
             cout << "\nCould not find client code: " << auxCode << "\n";
@@ -418,6 +338,8 @@ void Menu::removeEmployee()
 
         while (getline(fileReader, code))
         {
+            if (code.empty()) continue;
+
             getline(fileReader, firstName);
             getline(fileReader, lastName);
             getline(fileReader, birthDate);
@@ -458,9 +380,10 @@ void Menu::removeEmployee()
         fileReader.close();
         fileAuxiliary.close();
 
-        // Cast to (void) to ignore the return value and prevent C6031 warnings
-        (void)remove("employees.txt");
-        (void)rename("auxiliary.txt", "employees.txt");
+        // Fix C6031 warnings
+        bool status;
+        status = (remove("employees.txt") == 0);
+        status = (rename("auxiliary.txt", "employees.txt") == 0);
 
         if (!found) {
             cout << "\nCould not find employee code: " << auxCode << "\n";
@@ -499,6 +422,8 @@ void Menu::modifyClient()
 
         while (getline(fileReader, code))
         {
+            if (code.empty()) continue;
+
             getline(fileReader, firstName);
             getline(fileReader, lastName);
             getline(fileReader, birthDate);
@@ -537,9 +462,10 @@ void Menu::modifyClient()
         fileReader.close();
         fileAuxiliary.close();
 
-        // Cast to (void) to ignore the return value and prevent C6031 warnings
-        (void)remove("clients.txt");
-        (void)rename("auxiliary.txt", "clients.txt");
+        // Fix C6031 warnings
+        bool status;
+        status = (remove("clients.txt") == 0);
+        status = (rename("auxiliary.txt", "clients.txt") == 0);
 
         if (!found) {
             cout << "\nNo client found with code: " << auxCode << "\n";
@@ -578,6 +504,8 @@ void Menu::modifyEmployee()
 
         while (getline(fileReader, code))
         {
+            if (code.empty()) continue;
+
             getline(fileReader, firstName);
             getline(fileReader, lastName);
             getline(fileReader, birthDate);
@@ -603,7 +531,9 @@ void Menu::modifyEmployee()
                 cout << "New City: "; getline(cin, city);
                 cout << "New Postal Code: "; getline(cin, postalCode);
                 cout << "New Phone Number: "; getline(cin, phoneNumber);
-                cout << "New Admin/Manager ID: "; getline(cin, idUserAdmin);
+
+                idUserAdmin = "A1234";
+
                 cout << "New Role ID: "; getline(cin, idRole);
                 cout << "\nRecord modified successfully!\n";
             }
@@ -616,9 +546,10 @@ void Menu::modifyEmployee()
         fileReader.close();
         fileAuxiliary.close();
 
-        // Cast to (void) to ignore the return value and prevent C6031 warnings
-        (void)remove("employees.txt");
-        (void)rename("auxiliary.txt", "employees.txt");
+        // Fix C6031 warnings
+        bool status;
+        status = (remove("employees.txt") == 0);
+        status = (rename("auxiliary.txt", "employees.txt") == 0);
 
         if (!found) {
             cout << "\nNo employee found with code: " << auxCode << "\n";
@@ -647,6 +578,8 @@ void Menu::listClients()
         else {
             while (getline(fileReader, code))
             {
+                if (code.empty()) continue;
+
                 getline(fileReader, firstName);
                 getline(fileReader, lastName);
                 getline(fileReader, birthDate);
@@ -686,6 +619,8 @@ void Menu::listEmployees()
         else {
             while (getline(fileReader, code))
             {
+                if (code.empty()) continue;
+
                 getline(fileReader, firstName);
                 getline(fileReader, lastName);
                 getline(fileReader, birthDate);
@@ -720,11 +655,13 @@ void Menu::searchClient()
     {
         system(CLEAR);
         cout << "\t\t\t\t*** Search for a Client ***\t\t\t\t\n\n";
-        cout << "Enter the client code to search: ";
+        cout << "Enter the client code to search (e.g. E0001): ";
         getline(cin, auxCode);
 
         while (getline(fileReader, code))
         {
+            if (code.empty()) continue;
+
             getline(fileReader, firstName);
             getline(fileReader, lastName);
             getline(fileReader, birthDate);
@@ -768,11 +705,13 @@ void Menu::searchEmployee()
     {
         system(CLEAR);
         cout << "\t\t\t\t*** Search for an Employee ***\t\t\t\t\n\n";
-        cout << "Enter the employee code to search: ";
+        cout << "Enter the employee code to search (e.g. T0001): ";
         getline(cin, auxCode);
 
         while (getline(fileReader, code))
         {
+            if (code.empty()) continue;
+
             getline(fileReader, firstName);
             getline(fileReader, lastName);
             getline(fileReader, birthDate);
@@ -845,7 +784,6 @@ void showError()
 
 void checkFiles()
 {
-    // This function ensures data files physically exist so that initial readings do not fail
     ofstream fileClients("clients.txt", ios::app);
     fileClients.close();
 
