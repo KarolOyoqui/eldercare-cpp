@@ -1,22 +1,24 @@
-2
-John
-Snow
-23/06/1978
-queretaro
-queretaro
-queretaro
-234543
-4423321123
-44232123
-teacher
 T0001
-Monica
-Morales
+Ricardo
+Mendoza
 12/04/1985
-Av. Universidad 456, Colonia µlamos
+Paseo Central 789
 Quer‚taro
 Santiago de Quer‚taro
-76160
-4425559999
+76040
+4424445555
 A1234
 01
+profeRica
+T0002
+Laura Sof¡a
+Castillo
+29/09/1990
+Av. de la Luz 12
+Quer‚taro
+Santiago de Quer‚taro
+76110
+4426667777
+A1234
+02
+laura90

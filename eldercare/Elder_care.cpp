@@ -147,13 +147,21 @@ private:
     string currentDate;
     string idUserAdmin;
     string idRole;
+    string password;
 
     Activity* appActivities[8];
+
+    string loggedID;
+    char sessionRole;
 
     string generateID(string filename, char prefix);
     bool isActivityAssigned(string actID);
     int getActivityUserCount(string actID);
     bool clientExists(string clientID);
+
+    bool loginProcedure();
+    void showClientEnrolledActivities(string clientID);
+    void showEmployeeAssignedActivity(string actID);
 
 public:
     Menu();
@@ -172,7 +180,14 @@ public:
     void enrollClient();
     void listActivities();
 
-    void mainMenu();
+    void clientOwnRecord(string clientID);
+    void employeeOwnRecord(string employeeID);
+
+    void runSystem();
+    void adminMenu();
+    void clientMenu();
+    void employeeMenu();
+
     void displayRecord(string cod);
     void displayEmployeeRecord(string cod);
 };
@@ -186,7 +201,7 @@ int main()
 {
     checkFiles();
     Menu app;
-    app.mainMenu();
+    app.runSystem();
     return 0;
 }
 
@@ -203,6 +218,9 @@ Menu::Menu()
     appActivities[5] = new TherapeuticDance();
     appActivities[6] = new BoardGames();
     appActivities[7] = new SocialInteraction();
+
+    loggedID = "";
+    sessionRole = ' ';
 }
 
 Menu::~Menu()
@@ -213,16 +231,120 @@ Menu::~Menu()
 }
 
 // =========================================================================
-// Main Menu
+// Security / Login Layer (Continuous Loop Implementation)
 // =========================================================================
-void Menu::mainMenu()
+bool Menu::loginProcedure()
+{
+    string inputUser, inputPass;
+    system(CLEAR);
+    cout << "=================================================" << endl;
+    cout << "         Elder Care Authentication System        " << endl;
+    cout << "=================================================" << endl;
+    cout << "Enter User ID (Code): ";
+    getline(cin, inputUser);
+    cout << "Enter Password: ";
+    getline(cin, inputPass);
+
+    if (inputUser == "A1234" && inputPass == "1234") {
+        loggedID = "A1234";
+        sessionRole = 'A';
+        return true;
+    }
+
+    if (!inputUser.empty() && inputUser[0] == 'E') {
+        ifstream fileReader("clients.txt", ios::in);
+        string cCode, cFirst, cLast, cDOB, cAddr, cState, cCity, cZip, cPhone, cEmerg, cDate, cPass;
+
+        while (getline(fileReader, cCode)) {
+            if (cCode.empty()) continue;
+            getline(fileReader, cFirst); getline(fileReader, cLast); getline(fileReader, cDOB);
+            getline(fileReader, cAddr); getline(fileReader, cState); getline(fileReader, cCity);
+            getline(fileReader, cZip); getline(fileReader, cPhone); getline(fileReader, cEmerg);
+            getline(fileReader, cDate); getline(fileReader, cPass);
+
+            if (cCode == inputUser && cPass == inputPass) {
+                loggedID = cCode;
+                sessionRole = 'E';
+                fileReader.close();
+                return true;
+            }
+        }
+        fileReader.close();
+    }
+
+    if (!inputUser.empty() && inputUser[0] == 'T') {
+        ifstream fileReader("employees.txt", ios::in);
+        string tCode, tFirst, tLast, tDOB, tAddr, tState, tCity, tZip, tPhone, tAdmin, tRole, tPass;
+
+        while (getline(fileReader, tCode)) {
+            if (tCode.empty()) continue;
+            getline(fileReader, tFirst); getline(fileReader, tLast); getline(fileReader, tDOB);
+            getline(fileReader, tAddr); getline(fileReader, tState); getline(fileReader, tCity);
+            getline(fileReader, tZip); getline(fileReader, tPhone); getline(fileReader, tAdmin);
+            getline(fileReader, tRole); getline(fileReader, tPass);
+
+            if (tCode == inputUser && tPass == inputPass) {
+                loggedID = tCode;
+                sessionRole = 'T';
+                fileReader.close();
+                return true;
+            }
+        }
+        fileReader.close();
+    }
+
+    cout << "\nError: Access Denied. Invalid Code or Password.\n";
+    pause();
+    return false;
+}
+
+void Menu::runSystem()
+{
+    bool systemRunning = true;
+    while (systemRunning)
+    {
+        loggedID = "";
+        sessionRole = ' ';
+
+        system(CLEAR);
+        cout << "=================================================" << endl;
+        cout << "         Elder Care Management System            " << endl;
+        cout << "=================================================" << endl;
+        cout << "1. Access Portal (Login)" << endl;
+        cout << "2. Shutdown System" << endl;
+        cout << "Select an option: ";
+        string mainOption;
+        getline(cin, mainOption);
+
+        if (mainOption == "1") {
+            if (loginProcedure()) {
+                if (sessionRole == 'A') adminMenu();
+                else if (sessionRole == 'E') clientMenu();
+                else if (sessionRole == 'T') employeeMenu();
+            }
+        }
+        else if (mainOption == "2") {
+            cout << "\nShutting down system completely. Goodbye!\n";
+            systemRunning = false;
+        }
+        else {
+            showError();
+            pause();
+        }
+    }
+}
+
+// =========================================================================
+// Role Based Menus
+// =========================================================================
+void Menu::adminMenu()
 {
     int option;
     do
     {
         system(CLEAR);
         cout << "=================================================" << endl;
-        cout << "         Elder Care Management System            " << endl;
+        cout << "   Elder Care Management System - ADMINISTRATOR  " << endl;
         cout << "=================================================" << endl;
         cout << "1.  Register client" << endl;
         cout << "2.  Register employee (Teacher)" << endl;
@@ -236,7 +358,7 @@ void Menu::mainMenu()
         cout << "10. Search employee" << endl;
         cout << "11. Enroll Client in Activity" << endl;
         cout << "12. List Activities & Status" << endl;
-        cout << "13. Exit" << endl;
+        cout << "13. Log Out (Exit Session)" << endl;
         cout << "Select an option please: ";
         cin >> option;
         cin.ignore();
@@ -255,10 +377,144 @@ void Menu::mainMenu()
         case 10: searchEmployee(); break;
         case 11: enrollClient(); break;
         case 12: listActivities(); break;
-        case 13: cout << "Exiting the system..." << endl; break;
+        case 13: cout << "\nLogging out from Administrator session..." << endl; pause(); break;
         default: showError(); pause(); break;
         }
     } while (option != 13);
+}
+
+void Menu::clientMenu()
+{
+    int option;
+    do {
+        system(CLEAR);
+        cout << "=================================================" << endl;
+        cout << "      Elder Care Management System - CLIENT      " << endl;
+        cout << "=================================================" << endl;
+        cout << "1. View My Personal Profile & Registered Classes" << endl;
+        cout << "2. Log Out (Exit Session)" << endl;
+        cout << "Select an option please: ";
+        cin >> option;
+        cin.ignore();
+
+        switch (option) {
+        case 1: clientOwnRecord(loggedID); break;
+        case 2: cout << "\nLogging out from Client session..." << endl; pause(); break;
+        default: showError(); pause(); break;
+        }
+    } while (option != 2);
+}
+
+void Menu::employeeMenu()
+{
+    int option;
+    do {
+        system(CLEAR);
+        cout << "=================================================" << endl;
+        cout << "     Elder Care Management System - EMPLOYEE     " << endl;
+        cout << "=================================================" << endl;
+        cout << "1. View My Personal Profile & Teaching Assignment" << endl;
+        cout << "2. Log Out (Exit Session)" << endl;
+        cout << "Select an option please: ";
+        cin >> option;
+        cin.ignore();
+
+        switch (option) {
+        case 1: employeeOwnRecord(loggedID); break;
+        case 2: cout << "\nLogging out from Employee session..." << endl; pause(); break;
+        default: showError(); pause(); break;
+        }
+    } while (option != 2);
+}
+
+// =========================================================================
+// Privacy Restricted Access Sub-methods
+// =========================================================================
+void Menu::clientOwnRecord(string clientID)
+{
+    ifstream fileReader("clients.txt", ios::in);
+    if (fileReader.is_open()) {
+        system(CLEAR);
+        cout << "\t\t\t\t*** My Personal Profile ***\t\t\t\t\n\n";
+        while (getline(fileReader, code)) {
+            if (code.empty()) continue;
+            getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
+            getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
+            getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber);
+            getline(fileReader, currentDate); getline(fileReader, password);
+
+            if (code == clientID) {
+                displayRecord(code);
+                showClientEnrolledActivities(clientID);
+                break;
+            }
+        }
+        fileReader.close();
+    }
+    pause();
+}
+
+void Menu::employeeOwnRecord(string employeeID)
+{
+    ifstream fileReader("employees.txt", ios::in);
+    if (fileReader.is_open()) {
+        system(CLEAR);
+        cout << "\t\t\t\t*** My Staff Profile ***\t\t\t\t\n\n";
+        while (getline(fileReader, code)) {
+            if (code.empty()) continue;
+            getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
+            getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
+            getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, idUserAdmin);
+            getline(fileReader, idRole); getline(fileReader, password);
+
+            if (code == employeeID) {
+                displayEmployeeRecord(code);
+                showEmployeeAssignedActivity(idRole);
+                break;
+            }
+        }
+        fileReader.close();
+    }
+    pause();
+}
+
+void Menu::showClientEnrolledActivities(string clientID)
+{
+    ifstream fileReader("enrollments.txt", ios::in);
+    string eClient, eActivity;
+    bool hasActivities = false;
+
+    cout << "\n>>> Enrolled Activities and Schedules:\n";
+    while (getline(fileReader, eClient)) {
+        if (eClient.empty()) continue;
+        getline(fileReader, eActivity);
+
+        if (eClient == clientID) {
+            for (int i = 0; i < 8; i++) {
+                if (appActivities[i]->idActivity == eActivity) {
+                    cout << "- " << appActivities[i]->name << " | Schedule: " << appActivities[i]->schedule << "\n";
+                    hasActivities = true;
+                }
+            }
+        }
+    }
+    if (!hasActivities) cout << "[You are not currently enrolled in any activity]\n";
+    fileReader.close();
+}
+
+void Menu::showEmployeeAssignedActivity(string actID)
+{
+    cout << "\n>>> Assigned Teaching Activity Details:\n";
+    bool matched = false;
+    for (int i = 0; i < 8; i++) {
+        if (appActivities[i]->idActivity == actID) {
+            cout << "Activity: " << appActivities[i]->name << "\n";
+            cout << "Description: " << appActivities[i]->description << "\n";
+            cout << "Schedule: " << appActivities[i]->schedule << "\n";
+            matched = true;
+        }
+    }
+    if (!matched) cout << "[No formal teaching activity associated]\n";
 }
 
 // =========================================================================
@@ -267,103 +523,68 @@ void Menu::mainMenu()
 string Menu::generateID(string filename, char prefix)
 {
     ifstream fileReader(filename, ios::in);
-    string lastID = "";
-    string currentLine;
+    string lastID = ""; string currentLine;
 
     if (!fileReader.is_open() || fileReader.peek() == ifstream::traits_type::eof()) {
         return string(1, prefix) + "0001";
     }
 
-    while (getline(fileReader, currentLine))
-    {
+    while (getline(fileReader, currentLine)) {
         if (currentLine.empty()) continue;
         lastID = currentLine;
-        for (int i = 0; i < 10; ++i) {
-            string dummy;
-            getline(fileReader, dummy);
-        }
+        for (int i = 0; i < 11; ++i) { string dummy; getline(fileReader, dummy); }
     }
     fileReader.close();
 
-    if (lastID.length() < 2) {
-        return string(1, prefix) + "0001";
-    }
+    if (lastID.length() < 2) return string(1, prefix) + "0001";
 
     try {
         string numberPart = lastID.substr(1);
-        int number = stoi(numberPart);
-        number++;
-        stringstream ss;
-        ss << prefix << setfill('0') << setw(4) << number;
+        int number = stoi(numberPart); number++;
+        stringstream ss; ss << prefix << setfill('0') << setw(4) << number;
         return ss.str();
     }
-    catch (...) {
-        return string(1, prefix) + "0001";
-    }
+    catch (...) { return string(1, prefix) + "0001"; }
 }
 
 bool Menu::isActivityAssigned(string actID)
 {
     ifstream fileReader("employees.txt", ios::in);
-    string tempCode, tFirst, tLast, tDOB, tAddr, tState, tCity, tZip, tPhone, tAdmin, tRole;
+    string tCode, tFirst, tLast, tDOB, tAddr, tState, tCity, tZip, tPhone, tAdmin, tRole, tPass;
 
-    while (getline(fileReader, tempCode))
-    {
-        if (tempCode.empty()) continue;
-        getline(fileReader, tFirst);
-        getline(fileReader, tLast);
-        getline(fileReader, tDOB);
-        getline(fileReader, tAddr);
-        getline(fileReader, tState);
-        getline(fileReader, tCity);
-        getline(fileReader, tZip);
-        getline(fileReader, tPhone);
-        getline(fileReader, tAdmin);
-        getline(fileReader, tRole);
+    while (getline(fileReader, tCode)) {
+        if (tCode.empty()) continue;
+        getline(fileReader, tFirst); getline(fileReader, tLast); getline(fileReader, tDOB);
+        getline(fileReader, tAddr); getline(fileReader, tState); getline(fileReader, tCity);
+        getline(fileReader, tZip); getline(fileReader, tPhone); getline(fileReader, tAdmin);
+        getline(fileReader, tRole); getline(fileReader, tPass);
 
-        if (tRole == actID) {
-            fileReader.close();
-            return true;
-        }
+        if (tRole == actID) { fileReader.close(); return true; }
     }
-    fileReader.close();
-    return false;
+    fileReader.close(); return false;
 }
 
 int Menu::getActivityUserCount(string actID)
 {
     ifstream fileReader("enrollments.txt", ios::in);
-    string eClient, eActivity;
-    int count = 0;
-
-    while (getline(fileReader, eClient))
-    {
+    string eClient, eActivity; int count = 0;
+    while (getline(fileReader, eClient)) {
         if (eClient.empty()) continue;
         getline(fileReader, eActivity);
-
-        if (eActivity == actID) {
-            count++;
-        }
+        if (eActivity == actID) count++;
     }
-    fileReader.close();
-    return count;
+    fileReader.close(); return count;
 }
 
 bool Menu::clientExists(string clientID)
 {
-    ifstream fileReader("clients.txt", ios::in);
-    string tempCode;
-    while (getline(fileReader, tempCode))
-    {
+    ifstream fileReader("clients.txt", ios::in); string tempCode;
+    while (getline(fileReader, tempCode)) {
         if (tempCode.empty()) continue;
-        if (tempCode == clientID) {
-            fileReader.close();
-            return true;
-        }
-        for (int i = 0; i < 10; ++i) { string dummy; getline(fileReader, dummy); }
+        if (tempCode == clientID) { fileReader.close(); return true; }
+        for (int i = 0; i < 11; ++i) { string dummy; getline(fileReader, dummy); }
     }
-    fileReader.close();
-    return false;
+    fileReader.close(); return false;
 }
 
 // =========================================================================
@@ -371,13 +592,9 @@ bool Menu::clientExists(string clientID)
 // =========================================================================
 void Menu::registerClient()
 {
-    ofstream fileOutput;
-    fileOutput.open("clients.txt", ios::app);
-
-    if (fileOutput.is_open())
-    {
+    ofstream fileOutput; fileOutput.open("clients.txt", ios::app);
+    if (fileOutput.is_open()) {
         code = generateID("clients.txt", 'E');
-
         system(CLEAR);
         cout << "\t\t\t\t*** Register a Client ***\t\t\t\t\n\n";
         cout << "Auto-generated Client Code: " << code << "\n\n";
@@ -392,58 +609,41 @@ void Menu::registerClient()
         cout << "Enter phone number: "; getline(cin, phoneNumber);
         cout << "Enter emergency phone number: "; getline(cin, emergencyPhoneNumber);
         cout << "Enter registration date (DD/MM/YYYY): "; getline(cin, currentDate);
+        cout << "Assign an Account Password: "; getline(cin, password);
 
         fileOutput << code << endl << firstName << endl << lastName << endl << birthDate << endl
             << address << endl << state << endl << city << endl << postalCode << endl
-            << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl;
+            << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl << password << endl;
 
-        cout << "\nRegistration completed successfully. ID assigned: " << code << "\n\n";
+        cout << "\nRegistration completed successfully.\n";
+        cout << "IMPORTANT: Client must use Code \"" << code << "\" and the assigned password to log in.\n\n";
     }
     else { showError(); }
-
-    fileOutput.close();
-    pause();
+    fileOutput.close(); pause();
 }
 
 void Menu::registerEmployee()
 {
-    ofstream fileOutput;
-    fileOutput.open("employees.txt", ios::app);
-
-    if (fileOutput.is_open())
-    {
+    ofstream fileOutput; fileOutput.open("employees.txt", ios::app);
+    if (fileOutput.is_open()) {
         system(CLEAR);
         cout << "\t\t\t\t*** Register an Employee (Teacher) ***\t\t\t\t\n\n";
-
         cout << "Select Activity to Teach (1-8):\n";
-        for (int i = 0; i < 8; i++) {
-            cout << appActivities[i]->idActivity << ". " << appActivities[i]->name << "\n";
-        }
-        cout << "Enter Choice (01-08): ";
-        getline(cin, idRole);
+        for (int i = 0; i < 8; i++) cout << appActivities[i]->idActivity << ". " << appActivities[i]->name << "\n";
+        cout << "Enter Choice (01-08): "; getline(cin, idRole);
 
         bool validRole = false;
-        for (int i = 0; i < 8; i++) {
-            if (idRole == appActivities[i]->idActivity) validRole = true;
-        }
+        for (int i = 0; i < 8; i++) if (idRole == appActivities[i]->idActivity) validRole = true;
 
         if (!validRole) {
-            cout << "\nInvalid Activity ID. Registration canceled.\n";
-            fileOutput.close();
-            pause();
-            return;
+            cout << "\nInvalid Activity ID. Registration canceled.\n"; fileOutput.close(); pause(); return;
         }
-
         if (isActivityAssigned(idRole)) {
-            cout << "\nError: This activity already has a teacher assigned!\n";
-            fileOutput.close();
-            pause();
-            return;
+            cout << "\nError: This activity already has a teacher assigned!\n"; fileOutput.close(); pause(); return;
         }
 
         code = generateID("employees.txt", 'T');
         cout << "\nAuto-generated Employee Code: " << code << "\n\n";
-
         cout << "Enter employee's first name: "; getline(cin, firstName);
         cout << "Enter employee's last name: "; getline(cin, lastName);
         cout << "Enter date of birth (DD/MM/YYYY): "; getline(cin, birthDate);
@@ -452,86 +652,60 @@ void Menu::registerEmployee()
         cout << "Enter City: "; getline(cin, city);
         cout << "Enter postal code: "; getline(cin, postalCode);
         cout << "Enter phone number: "; getline(cin, phoneNumber);
-
+        cout << "Assign an Account Password: "; getline(cin, password);
         idUserAdmin = "A1234";
-        cout << "Admin ID set to: " << idUserAdmin << "\n";
 
         fileOutput << code << endl << firstName << endl << lastName << endl << birthDate << endl
             << address << endl << state << endl << city << endl << postalCode << endl
-            << phoneNumber << endl << idUserAdmin << endl << idRole << endl;
+            << phoneNumber << endl << idUserAdmin << endl << idRole << endl << password << endl;
 
-        cout << "\nRegistration completed successfully. ID assigned: " << code << "\n\n";
+        cout << "\nRegistration completed successfully.\n";
+        cout << "IMPORTANT: Teacher must use Code \"" << code << "\" and the assigned password to log in.\n\n";
     }
     else { showError(); }
-
-    fileOutput.close();
-    pause();
+    fileOutput.close(); pause();
 }
 
 void Menu::enrollClient()
 {
     system(CLEAR);
     cout << "\t\t\t\t*** Enroll Client in Activity ***\t\t\t\t\n\n";
-
     string clientCode, actChoice;
-    cout << "Enter Client Code (e.g. E0001): ";
-    getline(cin, clientCode);
+    cout << "Enter Client Code (e.g. E0001): "; getline(cin, clientCode);
 
-    if (!clientExists(clientCode)) {
-        cout << "\nError: Client not found in the system.\n";
-        pause();
-        return;
-    }
+    if (!clientExists(clientCode)) { cout << "\nError: Client not found in the system.\n"; pause(); return; }
 
     cout << "\nAvailable Activities:\n";
     for (int i = 0; i < 8; i++) {
         int currentUsers = getActivityUserCount(appActivities[i]->idActivity);
         cout << appActivities[i]->idActivity << ". " << appActivities[i]->name
-            << " | Schedule: " << appActivities[i]->schedule
-            << " | Capacity: " << currentUsers << "/20\n";
+            << " | Schedule: " << appActivities[i]->schedule << " | Capacity: " << currentUsers << "/20\n";
     }
 
-    cout << "\nEnter Activity ID (01-08) to enroll: ";
-    getline(cin, actChoice);
+    cout << "\nEnter Activity ID (01-08) to enroll: "; getline(cin, actChoice);
 
     bool validRole = false;
-    for (int i = 0; i < 8; i++) {
-        if (actChoice == appActivities[i]->idActivity) validRole = true;
-    }
+    for (int i = 0; i < 8; i++) if (actChoice == appActivities[i]->idActivity) validRole = true;
 
-    if (!validRole) {
-        cout << "\nInvalid Activity ID.\n";
-        pause();
-        return;
-    }
-
-    if (getActivityUserCount(actChoice) >= 20) {
-        cout << "\nError: The selected activity has reached its maximum capacity (20 users).\n";
-        pause();
-        return;
-    }
+    if (!validRole) { cout << "\nInvalid Activity ID.\n"; pause(); return; }
+    if (getActivityUserCount(actChoice) >= 20) { cout << "\nError: Maximum capacity (20) reached.\n"; pause(); return; }
 
     ofstream fileOutput("enrollments.txt", ios::app);
     if (fileOutput.is_open()) {
         fileOutput << clientCode << endl << actChoice << endl;
         cout << "\nClient successfully enrolled in the activity!\n";
     }
-    else {
-        showError();
-    }
-    fileOutput.close();
-    pause();
+    else { showError(); }
+    fileOutput.close(); pause();
 }
 
 void Menu::listActivities()
 {
     system(CLEAR);
     cout << "\t\t\t\t*** System Activities & Status ***\t\t\t\t\n\n";
-
     for (int i = 0; i < 8; i++) {
         string teacherStatus = isActivityAssigned(appActivities[i]->idActivity) ? "Assigned" : "NO TEACHER";
         int currentUsers = getActivityUserCount(appActivities[i]->idActivity);
-
         cout << "=========================================================\n";
         cout << "Activity ID: " << appActivities[i]->idActivity << "\n";
         cout << "Name: " << appActivities[i]->name << "\n";
@@ -545,61 +719,44 @@ void Menu::listActivities()
 }
 
 // =========================================================================
-// Standard Management Methods (Remove, Modify, Search, List)
+// Standard CRUD Methods (Admin Access Block)
 // =========================================================================
-
 void Menu::removeClient()
 {
-    ifstream fileReader; ofstream fileAuxiliary;
-    bool found = false; string auxCode, response;
-
+    ifstream fileReader; ofstream fileAuxiliary; bool found = false; string auxCode, response;
     fileReader.open("clients.txt", ios::in);
-    if (fileReader.is_open())
-    {
+    if (fileReader.is_open()) {
         system(CLEAR);
         cout << "\t\t\t\t*** Remove a Client ***\t\t\t\t\n\n";
-        if (fileReader.peek() == ifstream::traits_type::eof()) {
-            cout << "No clients currently registered in the system.\n"; fileReader.close(); pause(); return;
-        }
+        if (fileReader.peek() == ifstream::traits_type::eof()) { fileReader.close(); pause(); return; }
 
         fileAuxiliary.open("auxiliary.txt", ios::out);
-        cout << "Enter the code of the client you wish to remove: ";
-        getline(cin, auxCode);
+        cout << "Enter the code of the client you wish to remove: "; getline(cin, auxCode);
 
-        while (getline(fileReader, code))
-        {
+        while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
             getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
             getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber);
-            getline(fileReader, currentDate);
+            getline(fileReader, currentDate); getline(fileReader, password);
 
             if (auxCode == code) {
-                found = true;
-                cout << "\n\nRecord Found!\n\n"; displayRecord(code);
+                found = true; displayRecord(code);
                 cout << "Are you sure you want to remove this client (y/n)?: "; getline(cin, response);
-                if (response == "y" || response == "Y" || response == "yes" || response == "YES") {
-                    cout << "\nThe client has been successfully removed.\n";
-                }
-                else {
-                    cout << "\nOperation canceled. Client retained.\n";
+                if (!(response == "y" || response == "Y")) {
                     fileAuxiliary << code << endl << firstName << endl << lastName << endl << birthDate << endl
                         << address << endl << state << endl << city << endl << postalCode << endl
-                        << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl;
+                        << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl << password << endl;
                 }
             }
             else {
                 fileAuxiliary << code << endl << firstName << endl << lastName << endl << birthDate << endl
                     << address << endl << state << endl << city << endl << postalCode << endl
-                    << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl;
+                    << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl << password << endl;
             }
         }
         fileReader.close(); fileAuxiliary.close();
-        bool status;
-        status = (remove("clients.txt") == 0);
-        status = (rename("auxiliary.txt", "clients.txt") == 0);
-
-        if (!found) cout << "\nCould not find client code: " << auxCode << "\n";
+        remove("clients.txt"); rename("auxiliary.txt", "clients.txt");
     }
     else { showError(); }
     pause();
@@ -607,56 +764,38 @@ void Menu::removeClient()
 
 void Menu::removeEmployee()
 {
-    ifstream fileReader; ofstream fileAuxiliary;
-    bool found = false; string auxCode, response;
-
+    ifstream fileReader; ofstream fileAuxiliary; bool found = false; string auxCode, response;
     fileReader.open("employees.txt", ios::in);
-    if (fileReader.is_open())
-    {
+    if (fileReader.is_open()) {
         system(CLEAR);
-        cout << "\t\t\t\t*** Remove an Employee ***\t\t\t\t\n\n";
-        if (fileReader.peek() == ifstream::traits_type::eof()) {
-            cout << "No employees currently registered.\n"; fileReader.close(); pause(); return;
-        }
-
+        if (fileReader.peek() == ifstream::traits_type::eof()) { fileReader.close(); pause(); return; }
         fileAuxiliary.open("auxiliary.txt", ios::out);
-        cout << "Enter the code of the employee you wish to remove: "; getline(cin, auxCode);
+        cout << "Enter employee code to remove: "; getline(cin, auxCode);
 
-        while (getline(fileReader, code))
-        {
+        while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
             getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
             getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, idUserAdmin);
-            getline(fileReader, idRole);
+            getline(fileReader, idRole); getline(fileReader, password);
 
             if (auxCode == code) {
-                found = true;
-                cout << "\n\nRecord Found!\n\n"; displayEmployeeRecord(code);
-                cout << "Are you sure you want to remove this employee (y/n)?: "; getline(cin, response);
-
-                if (response == "y" || response == "Y" || response == "yes" || response == "YES") {
-                    cout << "\nThe employee has been successfully removed.\n";
-                }
-                else {
-                    cout << "\nOperation canceled.\n";
+                found = true; displayEmployeeRecord(code);
+                cout << "Remove employee (y/n)?: "; getline(cin, response);
+                if (!(response == "y" || response == "Y")) {
                     fileAuxiliary << code << endl << firstName << endl << lastName << endl << birthDate << endl
                         << address << endl << state << endl << city << endl << postalCode << endl
-                        << phoneNumber << endl << idUserAdmin << endl << idRole << endl;
+                        << phoneNumber << endl << idUserAdmin << endl << idRole << endl << password << endl;
                 }
             }
             else {
                 fileAuxiliary << code << endl << firstName << endl << lastName << endl << birthDate << endl
                     << address << endl << state << endl << city << endl << postalCode << endl
-                    << phoneNumber << endl << idUserAdmin << endl << idRole << endl;
+                    << phoneNumber << endl << idUserAdmin << endl << idRole << endl << password << endl;
             }
         }
         fileReader.close(); fileAuxiliary.close();
-        bool status;
-        status = (remove("employees.txt") == 0);
-        status = (rename("auxiliary.txt", "employees.txt") == 0);
-
-        if (!found) cout << "\nCould not find employee code: " << auxCode << "\n";
+        remove("employees.txt"); rename("auxiliary.txt", "employees.txt");
     }
     else { showError(); }
     pause();
@@ -664,50 +803,30 @@ void Menu::removeEmployee()
 
 void Menu::modifyClient()
 {
-    ifstream fileReader; ofstream fileAuxiliary;
-    bool found = false; string auxCode;
-
+    ifstream fileReader; ofstream fileAuxiliary; bool found = false; string auxCode;
     fileReader.open("clients.txt", ios::in);
-    if (fileReader.is_open())
-    {
-        system(CLEAR);
-        cout << "\t\t\t\t*** Modify Client ***\t\t\t\t\n\n";
-        if (fileReader.peek() == ifstream::traits_type::eof()) {
-            cout << "No clients registered to modify.\n"; fileReader.close(); pause(); return;
-        }
-
+    if (fileReader.is_open()) {
         fileAuxiliary.open("auxiliary.txt", ios::out);
-        cout << "Enter the code of the client you wish to modify: "; getline(cin, auxCode);
+        cout << "Enter client code to modify: "; getline(cin, auxCode);
 
-        while (getline(fileReader, code))
-        {
+        while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
             getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
             getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber);
-            getline(fileReader, currentDate);
+            getline(fileReader, currentDate); getline(fileReader, password);
 
             if (auxCode == code) {
                 found = true;
-                cout << "\n--- Current Data ---\n"; displayRecord(code);
-                cout << "\n--- Enter New Data ---\n";
                 cout << "New First Name: "; getline(cin, firstName); cout << "New Last Name: "; getline(cin, lastName);
-                cout << "New Date of Birth: "; getline(cin, birthDate); cout << "New Address: "; getline(cin, address);
-                cout << "New State: "; getline(cin, state); cout << "New City: "; getline(cin, city);
-                cout << "New Postal Code: "; getline(cin, postalCode); cout << "New Phone Number: "; getline(cin, phoneNumber);
-                cout << "New Emergency Phone Number: "; getline(cin, emergencyPhoneNumber); cout << "New Registration Date: "; getline(cin, currentDate);
-                cout << "\nRecord modified successfully!\n";
+                cout << "New Password: "; getline(cin, password);
             }
             fileAuxiliary << code << endl << firstName << endl << lastName << endl << birthDate << endl
                 << address << endl << state << endl << city << endl << postalCode << endl
-                << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl;
+                << phoneNumber << endl << emergencyPhoneNumber << endl << currentDate << endl << password << endl;
         }
         fileReader.close(); fileAuxiliary.close();
-        bool status;
-        status = (remove("clients.txt") == 0);
-        status = (rename("auxiliary.txt", "clients.txt") == 0);
-
-        if (!found) cout << "\nNo client found with code: " << auxCode << "\n";
+        remove("clients.txt"); rename("auxiliary.txt", "clients.txt");
     }
     else { showError(); }
     pause();
@@ -715,51 +834,30 @@ void Menu::modifyClient()
 
 void Menu::modifyEmployee()
 {
-    ifstream fileReader; ofstream fileAuxiliary;
-    bool found = false; string auxCode;
-
+    ifstream fileReader; ofstream fileAuxiliary; bool found = false; string auxCode;
     fileReader.open("employees.txt", ios::in);
-    if (fileReader.is_open())
-    {
-        system(CLEAR);
-        cout << "\t\t\t\t*** Modify Employee ***\t\t\t\t\n\n";
-        if (fileReader.peek() == ifstream::traits_type::eof()) {
-            cout << "No employees registered to modify.\n"; fileReader.close(); pause(); return;
-        }
-
+    if (fileReader.is_open()) {
         fileAuxiliary.open("auxiliary.txt", ios::out);
-        cout << "Enter the code of the employee you wish to modify: "; getline(cin, auxCode);
+        cout << "Enter employee code to modify: "; getline(cin, auxCode);
 
-        while (getline(fileReader, code))
-        {
+        while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
             getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
             getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, idUserAdmin);
-            getline(fileReader, idRole);
+            getline(fileReader, idRole); getline(fileReader, password);
 
             if (auxCode == code) {
                 found = true;
-                cout << "\n--- Current Data ---\n"; displayEmployeeRecord(code);
-                cout << "\n--- Enter New Data ---\n";
                 cout << "New First Name: "; getline(cin, firstName); cout << "New Last Name: "; getline(cin, lastName);
-                cout << "New Date of Birth: "; getline(cin, birthDate); cout << "New Address: "; getline(cin, address);
-                cout << "New State: "; getline(cin, state); cout << "New City: "; getline(cin, city);
-                cout << "New Postal Code: "; getline(cin, postalCode); cout << "New Phone Number: "; getline(cin, phoneNumber);
-                idUserAdmin = "A1234";
-                cout << "New Assigned Activity ID (01-08): "; getline(cin, idRole);
-                cout << "\nRecord modified successfully!\n";
+                cout << "New Assigned Activity ID: "; getline(cin, idRole); cout << "New Password: "; getline(cin, password);
             }
             fileAuxiliary << code << endl << firstName << endl << lastName << endl << birthDate << endl
                 << address << endl << state << endl << city << endl << postalCode << endl
-                << phoneNumber << endl << idUserAdmin << endl << idRole << endl;
+                << phoneNumber << endl << idUserAdmin << endl << idRole << endl << password << endl;
         }
         fileReader.close(); fileAuxiliary.close();
-        bool status;
-        status = (remove("employees.txt") == 0);
-        status = (rename("auxiliary.txt", "employees.txt") == 0);
-
-        if (!found) cout << "\nNo employee found with code: " << auxCode << "\n";
+        remove("employees.txt"); rename("auxiliary.txt", "employees.txt");
     }
     else { showError(); }
     pause();
@@ -767,23 +865,16 @@ void Menu::modifyEmployee()
 
 void Menu::listClients()
 {
-    ifstream fileReader; fileReader.open("clients.txt", ios::in);
-    if (fileReader.is_open())
-    {
+    ifstream fileReader("clients.txt", ios::in);
+    if (fileReader.is_open()) {
         system(CLEAR);
-        cout << "\t\t\t\t*** List of Registered Clients ***\t\t\t\t\n\n";
-        if (fileReader.peek() == ifstream::traits_type::eof()) {
-            cout << "There are currently no clients in the database.\n";
-        }
-        else {
-            while (getline(fileReader, code)) {
-                if (code.empty()) continue;
-                getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
-                getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
-                getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber);
-                getline(fileReader, currentDate);
-                displayRecord(code);
-            }
+        while (getline(fileReader, code)) {
+            if (code.empty()) continue;
+            getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
+            getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
+            getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber);
+            getline(fileReader, currentDate); getline(fileReader, password);
+            displayRecord(code);
         }
         fileReader.close();
     }
@@ -793,23 +884,16 @@ void Menu::listClients()
 
 void Menu::listEmployees()
 {
-    ifstream fileReader; fileReader.open("employees.txt", ios::in);
-    if (fileReader.is_open())
-    {
+    ifstream fileReader("employees.txt", ios::in);
+    if (fileReader.is_open()) {
         system(CLEAR);
-        cout << "\t\t\t\t*** List of Registered Employees ***\t\t\t\t\n\n";
-        if (fileReader.peek() == ifstream::traits_type::eof()) {
-            cout << "There are currently no employees in the database.\n";
-        }
-        else {
-            while (getline(fileReader, code)) {
-                if (code.empty()) continue;
-                getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
-                getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
-                getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, idUserAdmin);
-                getline(fileReader, idRole);
-                displayEmployeeRecord(code);
-            }
+        while (getline(fileReader, code)) {
+            if (code.empty()) continue;
+            getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
+            getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
+            getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, idUserAdmin);
+            getline(fileReader, idRole); getline(fileReader, password);
+            displayEmployeeRecord(code);
         }
         fileReader.close();
     }
@@ -819,25 +903,18 @@ void Menu::listEmployees()
 
 void Menu::searchClient()
 {
-    ifstream fileReader; string auxCode; bool found = false;
-    fileReader.open("clients.txt", ios::in);
-    if (fileReader.is_open())
-    {
-        system(CLEAR);
-        cout << "\t\t\t\t*** Search for a Client ***\t\t\t\t\n\n";
-        cout << "Enter the client code to search (e.g. E0001): "; getline(cin, auxCode);
+    ifstream fileReader("clients.txt", ios::in); string auxCode; bool found = false;
+    if (fileReader.is_open()) {
+        cout << "Enter code to search: "; getline(cin, auxCode);
         while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
             getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
             getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber);
-            getline(fileReader, currentDate);
-            if (auxCode == code) {
-                found = true;
-                system(CLEAR); cout << "\t\t\t\t*** Client Found ***\t\t\t\t\n\n"; displayRecord(code); break;
-            }
+            getline(fileReader, currentDate); getline(fileReader, password);
+            if (auxCode == code) { found = true; displayRecord(code); break; }
         }
-        if (!found) cout << "\nNo client found with code: " << auxCode << "\n";
+        if (!found) cout << "\nNot found.\n";
         fileReader.close();
     }
     else { showError(); }
@@ -846,25 +923,18 @@ void Menu::searchClient()
 
 void Menu::searchEmployee()
 {
-    ifstream fileReader; string auxCode; bool found = false;
-    fileReader.open("employees.txt", ios::in);
-    if (fileReader.is_open())
-    {
-        system(CLEAR);
-        cout << "\t\t\t\t*** Search for an Employee ***\t\t\t\t\n\n";
-        cout << "Enter the employee code to search (e.g. T0001): "; getline(cin, auxCode);
+    ifstream fileReader("employees.txt", ios::in); string auxCode; bool found = false;
+    if (fileReader.is_open()) {
+        cout << "Enter code to search: "; getline(cin, auxCode);
         while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
             getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
             getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, idUserAdmin);
-            getline(fileReader, idRole);
-            if (auxCode == code) {
-                found = true;
-                system(CLEAR); cout << "\t\t\t\t*** Employee Found ***\t\t\t\t\n\n"; displayEmployeeRecord(code); break;
-            }
+            getline(fileReader, idRole); getline(fileReader, password);
+            if (auxCode == code) { found = true; displayEmployeeRecord(code); break; }
         }
-        if (!found) cout << "\nNo employee found with code: " << auxCode << "\n";
+        if (!found) cout << "\nNot found.\n";
         fileReader.close();
     }
     else { showError(); }
@@ -889,8 +959,6 @@ void Menu::displayEmployeeRecord(string cod)
     cout << "=========================================================" << endl;
     cout << "Code: " << cod << endl;
     cout << "Full Name: " << firstName << " " << lastName << endl;
-    cout << "Date of Birth: " << birthDate << endl;
-    cout << "Address: " << address << ", " << city << ", " << state << " (Postal Code: " << postalCode << ")" << endl;
     cout << "Phone Number: " << phoneNumber << endl;
     cout << "Admin ID: " << idUserAdmin << endl;
     cout << "Teaching Activity ID: " << idRole << endl;
@@ -900,16 +968,8 @@ void Menu::displayEmployeeRecord(string cod)
 // =========================================================================
 // Utility Functions
 // =========================================================================
-void pause()
-{
-    cout << "\nPress Enter to continue...";
-    cin.get();
-}
-
-void showError()
-{
-    cout << "\nError: Invalid operation or issue with the data files.\n";
-}
+void pause() { cout << "\nPress Enter to continue..."; cin.get(); }
+void showError() { cout << "\nError: Invalid operation or data files issue.\n"; }
 
 void checkFiles()
 {

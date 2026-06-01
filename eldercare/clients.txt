@@ -1,22 +1,36 @@
-1
-Maria Elena
-Torrez
- 22/05/1974
-loma real
-Qeretaro
-Queretaro
-4566543
-442321123
-442678875
-27/05/2026
 E0001
-Roberto
-G¢mez
-15/08/1942
-Calle de las Rosas 123, Colonia Centro
+Juan Carlos
+P‚rez
+15/03/1948
+Calle Ju rez 123
 Quer‚taro
 Santiago de Quer‚taro
 76000
-4429876543
-30/05/2026
-
+4421112222
+4429998888
+01/06/2026
+juanito18
+E0002
+Elena Maria
+G¢mez
+22/11/1951
+Av. Tecnol¢gico 45
+Quer‚taro
+Santiago de Quer‚taro
+76150
+4423334444
+4427776666
+01/06/2026
+elena51
+E0003
+Roberto
+Ruiz
+05/08/1944
+Privada del Sol 8
+Quer‚taro
+Corregidora
+76900
+4425556666
+4428889999
+01/06/2026
+roberto44
