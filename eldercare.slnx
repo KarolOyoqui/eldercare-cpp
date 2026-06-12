@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="eldercare/eldercare.vcxproj" />
+  <Project Path="eldercare/eldercare.vcxproj" Id="fec3a370-5733-4065-8827-7dd95060331e" />
 </Solution>

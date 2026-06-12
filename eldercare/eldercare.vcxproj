@@ -139,7 +139,13 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Menu.cpp" />
     <ClCompile Include="Elder_care.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Activity.h" />
+    <ClInclude Include="..\Menu.h" />
+    <ClInclude Include="..\User.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
