@@ -33,4 +33,4 @@ To handle memory, I decided to use the **Rule of Zero**. Instead of using the ol
 Since all of this cleans itself from memory when it's no longer in use, my classes don't need complicated constructors or destructors. I only added empty virtual destructors (virtual ~User() {}) in the parent classes just to be safe.
   
 # UML Class Diagram
-<img width="1920" height="1080" alt="UML Class Diagram" src="https://github.com/user-attachments/assets/9a393ff8-5632-434c-81d7-255f34285f83" />
+<img width="1920" height="1080" alt="Copia de Copia de Pizarra online diagrama UML minimalista degradado naranja brillante amarillo pastel blanco" src="https://github.com/user-attachments/assets/df170c1e-a86c-4f11-b042-e19ef706142b" />
