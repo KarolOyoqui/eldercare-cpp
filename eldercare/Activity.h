@@ -11,9 +11,15 @@ private:
     std::string description;
     std::string schedule;
 public:
-    Activity(const std::string& id, const std::string& nm, const std::string& desc, const std::string& sched)
-        : idActivity(id), name(nm), description(desc), schedule(sched) {
+   // Activity(const std::string& id, const std::string& nm, const std::string& desc, const std::string& sched)
+    //    : idActivity(id), name(nm), description(desc), schedule(sched) {
+    
+    //function that teaches cout how to print a complete Activity object
+    friend std::ostream& operator<<(std::ostream& os, const Activity& act) {
+        os << act.getName() << " | Schedule: " << act.getSchedule();
+        return os;
     }
+
     virtual ~Activity() {}
     //// THE GETTERS
     std::string getId() const { return idActivity; }

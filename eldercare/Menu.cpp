@@ -191,7 +191,7 @@ void Menu::showClientEnrolledActivities(const string& clientID) {
         if (eClient == clientID) {
             for (const auto& activity : appActivities) {
                 if (activity->getId() == eActivity) {
-                    cout << "- " << activity->getName() << " | Schedule: " << activity->getSchedule() << "\n";
+                    cout << "- " << *activity << "\n";
                     hasActivities = true;
                 }
             }
