@@ -1,6 +1,7 @@
 #pragma once
 #ifndef MENU_H
 #define MENU_H
+#include <vector>
 
 #include "Activity.h"
 #include "User.h"
@@ -9,17 +10,17 @@
 
 class Menu {
 private:
-    std::unique_ptr<Activity> appActivities[8];
-    std::string loggedID;
-    char sessionRole;
+    std::unique_ptr<Activity> appActivities[8]; //Arrangement of the intelligent pointers of the asylum activities
+    std::string loggedID; //Save the login code
+    char sessionRole; //Save the role letter (A,E,C)
 
-    std::string generateID(const std::string& filename, char prefix);
-    bool isActivityAssigned(const std::string& actID);
-    int getActivityUserCount(const std::string& actID);
-    bool clientExists(const std::string& clientID);
-    bool loginProcedure();
-    void showClientEnrolledActivities(const std::string& clientID);
-    void showEmployeeAssignedActivity(const std::string& actID);
+    std::string generateID(const std::string& filename, char prefix); // Read the.txt files and calculate the following ID (0001 to 0002)
+    bool isActivityAssigned(const std::string& actID); // Check if a class already has a teacher
+    int getActivityUserCount(const std::string& actID); // Count how many grandparents are enrolled in a class
+    bool clientExists(const std::string& clientID); // //Verify that the code exists
+    bool loginProcedure(); //Code and password screen
+    void showClientEnrolledActivities(const std::string& clientID); //Shows the class the user is in
+    void showEmployeeAssignedActivity(const std::string& actID); //Show what kind of class the teacher teaches.
 
 public:
     Menu();

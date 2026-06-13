@@ -5,7 +5,7 @@
 #include <string>
 #include <iostream>
 
-class User {
+class User { //PARENT CLASS
 protected:
     std::string code;
     std::string firstName;
@@ -17,14 +17,16 @@ public:
         : code(c), firstName(fn), lastName(ln), phoneNumber(ph), password(pass) {
     }
     virtual ~User() {}
-    virtual void displayProfile() const = 0;
+    virtual void displayProfile() const = 0; //Call the displayProfile() function of the child classes to display the information
+    // GETTERS
     std::string getCode() const { return code; }
     std::string getPassword() const { return password; }
     std::string getFullName() const { return firstName + " " + lastName; }
 };
 
-class Client : public User {
+class Client : public User { //Child class of User, use inheritance
 private:
+    //Customer-exclusive variables
     std::string birthDate;
     std::string address;
     std::string state;
@@ -35,11 +37,12 @@ private:
 public:
     Client(const std::string& c, const std::string& fn, const std::string& ln, const std::string& bd, const std::string& addr,
         const std::string& st, const std::string& ct, const std::string& pc, const std::string& ph, const std::string& eph,
-        const std::string& cd, const std::string& pass)
-        : User(c, fn, ln, ph, pass), birthDate(bd), address(addr), state(st), city(ct), postalCode(pc), emergencyPhoneNumber(eph), currentDate(cd) {
+        const std::string& cd, const std::string& pass) //It collects user data
+        : User(c, fn, ln, ph, pass), birthDate(bd), address(addr), state(st), city(ct), postalCode(pc), emergencyPhoneNumber(eph), currentDate(cd) { //Save the data
     }
 
     void displayProfile() const override {
+        //Display the data
         std::cout << "=========================================================" << std::endl;
         std::cout << "Code: " << code << std::endl;
         std::cout << "Full Name: " << firstName << " " << lastName << std::endl;
@@ -52,17 +55,19 @@ public:
     }
 };
 
-class Employee : public User {
+class Employee : public User { ////Child class of User, use inheritance
 private:
+    //Employee-exclusive variables
     std::string idUserAdmin;
-    std::string idRole;
+    std::string idRole; // The class that teaches
 public:
     Employee(const std::string& c, const std::string& fn, const std::string& ln, const std::string& ph,
-        const std::string& admin, const std::string& role, const std::string& pass)
-        : User(c, fn, ln, ph, pass), idUserAdmin(admin), idRole(role) {
+        const std::string& admin, const std::string& role, const std::string& pass) //It collects user data
+        : User(c, fn, ln, ph, pass), idUserAdmin(admin), idRole(role) { //Save the data
     }
 
     void displayProfile() const override {
+        //Display the data
         std::cout << "=========================================================" << std::endl;
         std::cout << "Code: " << code << std::endl;
         std::cout << "Full Name: " << firstName << " " << lastName << std::endl;
@@ -71,7 +76,7 @@ public:
         std::cout << "Teaching Activity ID: " << idRole << std::endl;
         std::cout << "=========================================================" << std::endl;
     }
-    std::string getIdRole() const { return idRole; }
+    std::string getIdRole() const { return idRole; } //Getter to find out what activity teaches
 };
 
 #endif

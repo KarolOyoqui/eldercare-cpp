@@ -4,7 +4,7 @@
 
 #include <string>
 
-class Activity {
+class Activity { //// Parent class
 private:
     std::string idActivity;
     std::string name;
@@ -15,13 +15,14 @@ public:
         : idActivity(id), name(nm), description(desc), schedule(sched) {
     }
     virtual ~Activity() {}
+    //// THE GETTERS
     std::string getId() const { return idActivity; }
     std::string getName() const { return name; }
     std::string getDescription() const { return description; }
     std::string getSchedule() const { return schedule; }
 };
-
-class GentleExercise : public Activity {
+// Child class
+class GentleExercise : public Activity { 
 public:
     GentleExercise() : Activity("01", "Gentle Exercise / Mobility Exercises", "Light movements to improve circulation, flexibility, and balance.", "Mon & Wed - 09:00 AM to 10:30 AM (Matutino)") {}
 };

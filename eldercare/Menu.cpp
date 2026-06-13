@@ -17,23 +17,27 @@ void localPause() { cout << "\nPress Enter to continue..."; cin.get(); }
 void localShowError() { cout << "\nError: Critical operation or data files issue.\n"; }
 
 Menu::Menu() {
-    appActivities[0] = make_unique<GentleExercise>();
-    appActivities[1] = make_unique<ArtsAndCrafts>();
-    appActivities[2] = make_unique<MusicAndSinging>();
-    appActivities[3] = make_unique<CognitiveStimulation>();
-    appActivities[4] = make_unique<ReadingAndWriting>();
-    appActivities[5] = make_unique<TherapeuticDance>();
-    appActivities[6] = make_unique<BoardGames>();
-    appActivities[7] = make_unique<SocialInteraction>();
-    loggedID = ""; sessionRole = ' ';
+    //We filled the appActivities array with the 8 available classes.
+    appActivities.push_back(make_unique<GentleExercise>());       
+    appActivities.push_back(make_unique<ArtsAndCrafts>());        
+    appActivities.push_back(make_unique<MusicAndSinging>());       
+    appActivities.push_back(make_unique<CognitiveStimulation>());  
+    appActivities.push_back(make_unique<ReadingAndWriting>());    
+    appActivities.push_back(make_unique<TherapeuticDance>());     
+    appActivities.push_back(make_unique<BoardGames>());            
+    appActivities.push_back(make_unique<SocialInteraction>());
+    loggedID = ""; sessionRole = ' '; // We start an empty session
 }
 
 bool Menu::loginProcedure() {
     string inputUser, inputPass; system(CLEAR);
+
     cout << "=================================================\n         Elder Care Authentication System        \n=================================================\n";
     cout << "Enter User ID (Code): "; getline(cin, inputUser);
     cout << "Enter Password: "; getline(cin, inputPass);
+   //// If it's the Admin
     if (inputUser == "A1234" && inputPass == "1234") { loggedID = "A1234"; sessionRole = 'A'; return true; }
+    // If he is an elderly person
     if (!inputUser.empty() && inputUser[0] == 'E') {
         ifstream fileReader("clients.txt", ios::in);
         string cCode, cFirst, cLast, cDOB, cAddr, cState, cCity, cZip, cPhone, cEmerg, cDate, cPass;
@@ -47,6 +51,7 @@ bool Menu::loginProcedure() {
         }
         fileReader.close();
     }
+    //// If he/she is an Employee
     if (!inputUser.empty() && inputUser[0] == 'T') {
         ifstream fileReader("employees.txt", ios::in);
         string tCode, tFirst, tLast, tDOB, tAddr, tState, tCity, tZip, tPhone, tAdmin, tRole, tPass;
@@ -60,6 +65,7 @@ bool Menu::loginProcedure() {
         }
         fileReader.close();
     }
+    //// This means that the code was not found or the password is incorrect. 
     cout << "\nError: Access Denied. Invalid Code or Password.\n"; localPause(); return false;
 }
 
