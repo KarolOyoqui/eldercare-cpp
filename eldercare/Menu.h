@@ -7,6 +7,7 @@
 #include "User.h"
 #include <memory>
 #include <string>
+#include <exception>
 
 class Menu {
 private:
@@ -41,6 +42,21 @@ public:
     void adminMenu();
     void clientMenu();
     void employeeMenu();
+};
+
+//Exception class
+class FileOpenException : public std::exception {
+private:
+    std::string message;
+public:
+    explicit FileOpenException(const std::string& filename) {
+        message = "FileOpenException: Failed to open essential data file -> " + filename;
+    }
+
+    // Sobrescribimos el método what() que pide std::exception usando noexcept
+    const char* what() const noexcept override {
+        return message.c_str();
+    }
 };
 
 #endif

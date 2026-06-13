@@ -418,18 +418,44 @@ void Menu::modifyEmployee() {
 }
 
 void Menu::listClients() {
-    ifstream fileReader("clients.txt");
-    if (fileReader.is_open()) {
-        system(CLEAR); vector<unique_ptr<User>> users; string code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, emergencyPhoneNumber, currentDate, password;
+    try {
+        ifstream fileReader("clients.txt");
+
+        // LANZAMOS la excepción si el archivo falla
+        if (!fileReader.is_open()) {
+            throw FileOpenException("clients.txt");
+        }
+
+        system(CLEAR);
+        vector<unique_ptr<User>> users;
+        string code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, emergencyPhoneNumber, currentDate, password;
+
         while (getline(fileReader, code)) {
             if (code.empty()) continue;
-            getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate); getline(fileReader, address); getline(fileReader, state); getline(fileReader, city); getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber); getline(fileReader, currentDate); getline(fileReader, password);
+            getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate);
+            getline(fileReader, address); getline(fileReader, state); getline(fileReader, city);
+            getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber);
+            getline(fileReader, currentDate); getline(fileReader, password);
+
             users.push_back(make_unique<Client>(code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, emergencyPhoneNumber, currentDate, password));
         }
         fileReader.close();
-        for (const auto& user : users) { user->displayProfile(); }
+
+        for (const auto& user : users) {
+            user->displayProfile();
+        }
+
     }
-    else localShowError();
+    // ATRAPAMOS la excepción personalizada en un límite seguro
+    catch (const FileOpenException& e) {
+        cout << "\n[CRITICAL ERROR] " << e.what() << "\n";
+        localShowError();
+    }
+    // ATRAPAMOS cualquier otra excepción estándar por seguridad
+    catch (const std::exception& e) {
+        cout << "\n[SYSTEM ERROR] " << e.what() << "\n";
+    }
+
     localPause();
 }
 
