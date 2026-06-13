@@ -16,5 +16,13 @@ Like in a real simulation, every action has effects: signing up a resident for a
 * **User-friendly:** The program is easy to use. Residents and staff can be registered, modified, searched, and deleted. The system uses polymorphism to handle different user types, facilitating data search and viewing.
 * **Activity Scheduling:** Activities have a maximum capacity. The system also validates availability and verifies that there are no scheduling conflicts before enrolling a resident or assigning a teacher.
 
+## OOP concepts
+For this project, I applied what we learned in class like this:
+
+* **Inheritance and Abstraction:** My User class is the parent class (abstract). Client and Employee are the child classes; this way I recycle code like the name or ID and only add the specific details for each one.
+* **Polymorphism:** I use it in the listClients() and listEmployees() functions. I save everyone in a vector using pointers of the parent class (User) and call displayProfile() so each user knows how to print the data.
+* **Operator Overloading:** In Activity.h, I modified the << operator to teach cout how to directly print all the information of a class or activity quickly.
+* **Exceptions:** I created a error called FileOpenException. If the program can't find or open the .txt text files, it throws this exception and the try...catch prevents the program from crashing.
+  
 # UML Class Diagram
 <img width="1920" height="1080" alt="UML Class Diagram" src="https://github.com/user-attachments/assets/9a393ff8-5632-434c-81d7-255f34285f83" />
