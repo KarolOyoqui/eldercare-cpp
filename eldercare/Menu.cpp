@@ -17,27 +17,23 @@ void localPause() { cout << "\nPress Enter to continue..."; cin.get(); }
 void localShowError() { cout << "\nError: Critical operation or data files issue.\n"; }
 
 Menu::Menu() {
-    //We filled the appActivities array with the 8 available classes.
-    appActivities.push_back(make_unique<GentleExercise>());       
-    appActivities.push_back(make_unique<ArtsAndCrafts>());        
-    appActivities.push_back(make_unique<MusicAndSinging>());       
-    appActivities.push_back(make_unique<CognitiveStimulation>());  
-    appActivities.push_back(make_unique<ReadingAndWriting>());    
-    appActivities.push_back(make_unique<TherapeuticDance>());     
-    appActivities.push_back(make_unique<BoardGames>());            
+    appActivities.push_back(make_unique<GentleExercise>());
+    appActivities.push_back(make_unique<ArtsAndCrafts>());
+    appActivities.push_back(make_unique<MusicAndSinging>());
+    appActivities.push_back(make_unique<CognitiveStimulation>());
+    appActivities.push_back(make_unique<ReadingAndWriting>());
+    appActivities.push_back(make_unique<TherapeuticDance>());
+    appActivities.push_back(make_unique<BoardGames>());
     appActivities.push_back(make_unique<SocialInteraction>());
-    loggedID = ""; sessionRole = ' '; // We start an empty session
+    loggedID = ""; sessionRole = ' ';
 }
 
 bool Menu::loginProcedure() {
     string inputUser, inputPass; system(CLEAR);
-
     cout << "=================================================\n         Elder Care Authentication System        \n=================================================\n";
     cout << "Enter User ID (Code): "; getline(cin, inputUser);
     cout << "Enter Password: "; getline(cin, inputPass);
-   //// If it's the Admin
     if (inputUser == "A1234" && inputPass == "1234") { loggedID = "A1234"; sessionRole = 'A'; return true; }
-    // If he is an elderly person
     if (!inputUser.empty() && inputUser[0] == 'E') {
         ifstream fileReader("clients.txt", ios::in);
         string cCode, cFirst, cLast, cDOB, cAddr, cState, cCity, cZip, cPhone, cEmerg, cDate, cPass;
@@ -51,7 +47,6 @@ bool Menu::loginProcedure() {
         }
         fileReader.close();
     }
-    //// If he/she is an Employee
     if (!inputUser.empty() && inputUser[0] == 'T') {
         ifstream fileReader("employees.txt", ios::in);
         string tCode, tFirst, tLast, tDOB, tAddr, tState, tCity, tZip, tPhone, tAdmin, tRole, tPass;
@@ -65,7 +60,6 @@ bool Menu::loginProcedure() {
         }
         fileReader.close();
     }
-    //// This means that the code was not found or the password is incorrect. 
     cout << "\nError: Access Denied. Invalid Code or Password.\n"; localPause(); return false;
 }
 
@@ -195,9 +189,9 @@ void Menu::showClientEnrolledActivities(const string& clientID) {
     while (getline(fileReader, eClient)) {
         if (eClient.empty()) continue; getline(fileReader, eActivity);
         if (eClient == clientID) {
-            for (int i = 0; i < 8; i++) {
-                if (appActivities[i]->getId() == eActivity) {
-                    cout << "- " << appActivities[i]->getName() << " | Schedule: " << appActivities[i]->getSchedule() << "\n";
+            for (const auto& activity : appActivities) {
+                if (activity->getId() == eActivity) {
+                    cout << "- " << activity->getName() << " | Schedule: " << activity->getSchedule() << "\n";
                     hasActivities = true;
                 }
             }
@@ -209,9 +203,9 @@ void Menu::showClientEnrolledActivities(const string& clientID) {
 
 void Menu::showEmployeeAssignedActivity(const string& actID) {
     cout << "\n>>> Assigned Teaching Activity Details:\n"; bool matched = false;
-    for (int i = 0; i < 8; i++) {
-        if (appActivities[i]->getId() == actID) {
-            cout << "Activity: " << appActivities[i]->getName() << "\nDescription: " << appActivities[i]->getDescription() << "\nSchedule: " << appActivities[i]->getSchedule() << "\n";
+    for (const auto& activity : appActivities) {
+        if (activity->getId() == actID) {
+            cout << "Activity: " << activity->getName() << "\nDescription: " << activity->getDescription() << "\nSchedule: " << activity->getSchedule() << "\n";
             matched = true;
         }
     }
@@ -272,11 +266,11 @@ void Menu::enrollClient() {
     string clientCode, actChoice; cout << "Enter Client Code (e.g. E0001): "; getline(cin, clientCode);
     if (!clientExists(clientCode)) { cout << "\nError: Client not found.\n"; localPause(); return; }
     cout << "\nAvailable Activities:\n";
-    for (int i = 0; i < 8; i++) { cout << appActivities[i]->getId() << ". " << appActivities[i]->getName() << " | Capacity: " << getActivityUserCount(appActivities[i]->getId()) << "/20\n"; }
+    for (const auto& activity : appActivities) { cout << activity->getId() << ". " << activity->getName() << " | Capacity: " << getActivityUserCount(activity->getId()) << "/20\n"; }
     cout << "\nEnter Activity ID (01-08): "; getline(cin, actChoice);
     bool validChoice = false; string chosenSchedule = "", chosenName = "";
-    for (int i = 0; i < 8; i++) {
-        if (actChoice == appActivities[i]->getId()) { validChoice = true; chosenSchedule = appActivities[i]->getSchedule(); chosenName = appActivities[i]->getName(); }
+    for (const auto& activity : appActivities) {
+        if (actChoice == activity->getId()) { validChoice = true; chosenSchedule = activity->getSchedule(); chosenName = activity->getName(); }
     }
     if (!validChoice) { cout << "\nInvalid Activity ID.\n"; localPause(); return; }
     if (getActivityUserCount(actChoice) >= 20) { cout << "\nError: Capacity full.\n"; localPause(); return; }
@@ -285,7 +279,7 @@ void Menu::enrollClient() {
         if (eClient.empty()) continue; getline(fileReader, eActivity);
         if (eClient == clientCode) {
             if (eActivity == actChoice) alreadyEnrolled = true;
-            for (int i = 0; i < 8; i++) { if (appActivities[i]->getId() == eActivity && appActivities[i]->getSchedule() == chosenSchedule) { scheduleConflict = true; conflictingName = appActivities[i]->getName(); } }
+            for (const auto& activity : appActivities) { if (activity->getId() == eActivity && activity->getSchedule() == chosenSchedule) { scheduleConflict = true; conflictingName = activity->getName(); } }
         }
     }
     fileReader.close();
@@ -297,10 +291,10 @@ void Menu::enrollClient() {
 
 void Menu::listActivities() {
     system(CLEAR); cout << "\t\t\t\t*** System Activities & Status ***\t\t\t\t\n\n";
-    for (int i = 0; i < 8; i++) {
-        string teacherStatus = isActivityAssigned(appActivities[i]->getId()) ? "Assigned" : "NO TEACHER";
-        cout << "=========================================================\nActivity ID: " << appActivities[i]->getId() << "\nName: " << appActivities[i]->getName()
-            << "\nSchedule: " << appActivities[i]->getSchedule() << "\nTeacher Status: " << teacherStatus << "\nEnrolled Users: " << getActivityUserCount(appActivities[i]->getId()) << " / 20\n";
+    for (const auto& activity : appActivities) {
+        string teacherStatus = isActivityAssigned(activity->getId()) ? "Assigned" : "NO TEACHER";
+        cout << "=========================================================\nActivity ID: " << activity->getId() << "\nName: " << activity->getName()
+            << "\nSchedule: " << activity->getSchedule() << "\nTeacher Status: " << teacherStatus << "\nEnrolled Users: " << getActivityUserCount(activity->getId()) << " / 20\n";
     }
     cout << "=========================================================\n"; localPause();
 }
@@ -324,9 +318,9 @@ void Menu::registerEmployee() {
     ofstream fileOutput("employees.txt", ios::app);
     if (fileOutput.is_open()) {
         string idRole; system(CLEAR); cout << "Select Activity (01-08):\n";
-        for (int i = 0; i < 8; i++) cout << appActivities[i]->getId() << ". " << appActivities[i]->getName() << "\n";
+        for (const auto& activity : appActivities) cout << activity->getId() << ". " << activity->getName() << "\n";
         cout << "Choice: "; getline(cin, idRole);
-        bool valid = false; for (int i = 0; i < 8; i++) if (idRole == appActivities[i]->getId()) valid = true;
+        bool valid = false; for (const auto& activity : appActivities) if (idRole == activity->getId()) valid = true;
         if (!valid || isActivityAssigned(idRole)) { cout << "\nInvalid choice or activity already has a teacher.\n"; fileOutput.close(); localPause(); return; }
         string code = generateID("employees.txt", 'T'); string firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, password;
         cout << "\nAuto-generated Code: " << code << "\n\n";

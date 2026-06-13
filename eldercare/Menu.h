@@ -10,8 +10,7 @@
 
 class Menu {
 private:
-    std::unique_ptr<Activity> appActivities[8]; //Arrangement of the intelligent pointers of the asylum activities
-    std::string loggedID; //Save the login code
+    std::vector<std::unique_ptr<Activity>> appActivities;    std::string loggedID; //Save the login code
     char sessionRole; //Save the role letter (A,E,C)
 
     std::string generateID(const std::string& filename, char prefix); // Read the.txt files and calculate the following ID (0001 to 0002)
