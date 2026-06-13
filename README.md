@@ -12,10 +12,9 @@ With this project, I aim to solve a problem using all the concepts from the Obje
 Like in a real simulation, every action has effects: signing up a resident for an activity uses limited spots, and serving weekly meals reduces the inventory. The goal is to make the center’s management better through a program that helps with administration.
 
 # Sistem Operation
-* Security: Access is restricted by a credential system.
-* Population Management: Residents and staff can be registered. The system uses polymorphism to search and remove records by name or ID, making searches easier.
-* Nutrition Logistics: The system shows which food supplies are available.
-* Activity Schedule: Activities have a maximum capacity. The system checks availability before assigning a resident, ensuring staff capacity is not exceeded.
-* Automatic Persistence: When the system closes, all changes to inventory, new registrations, and removals are saved in text files, working as a local database.
+* **Security:** Access is restricted through a credential-based login system. The program verifies IDs and passwords to open the corresponding menus.
+* **User-friendly:** The program is easy to use. Residents and staff can be registered, modified, searched, and deleted. The system uses polymorphism to handle different user types, facilitating data search and viewing.
+* **Activity Scheduling:** Activities have a maximum capacity. The system also validates availability and verifies that there are no scheduling conflicts before enrolling a resident or assigning a teacher.
+
 # UML Class Diagram
 <img width="1920" height="1080" alt="UML Class Diagram" src="https://github.com/user-attachments/assets/9a393ff8-5632-434c-81d7-255f34285f83" />
