@@ -420,13 +420,14 @@ void Menu::modifyEmployee() {
 void Menu::listClients() {
     ifstream fileReader("clients.txt");
     if (fileReader.is_open()) {
-        system(CLEAR); string code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, emergencyPhoneNumber, currentDate, password;
+        system(CLEAR); vector<unique_ptr<User>> users; string code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, emergencyPhoneNumber, currentDate, password;
         while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate); getline(fileReader, address); getline(fileReader, state); getline(fileReader, city); getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, emergencyPhoneNumber); getline(fileReader, currentDate); getline(fileReader, password);
-            Client(code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, emergencyPhoneNumber, currentDate, password).displayProfile();
+            users.push_back(make_unique<Client>(code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, emergencyPhoneNumber, currentDate, password));
         }
         fileReader.close();
+        for (const auto& user : users) { user->displayProfile(); }
     }
     else localShowError();
     localPause();
@@ -435,13 +436,14 @@ void Menu::listClients() {
 void Menu::listEmployees() {
     ifstream fileReader("employees.txt");
     if (fileReader.is_open()) {
-        system(CLEAR); string code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, idUserAdmin, idRole, password;
+        system(CLEAR); vector<unique_ptr<User>> users; string code, firstName, lastName, birthDate, address, state, city, postalCode, phoneNumber, idUserAdmin, idRole, password;
         while (getline(fileReader, code)) {
             if (code.empty()) continue;
             getline(fileReader, firstName); getline(fileReader, lastName); getline(fileReader, birthDate); getline(fileReader, address); getline(fileReader, state); getline(fileReader, city); getline(fileReader, postalCode); getline(fileReader, phoneNumber); getline(fileReader, idUserAdmin); getline(fileReader, idRole); getline(fileReader, password);
-            Employee(code, firstName, lastName, phoneNumber, idUserAdmin, idRole, password).displayProfile();
+            users.push_back(make_unique<Employee>(code, firstName, lastName, phoneNumber, idUserAdmin, idRole, password));
         }
         fileReader.close();
+        for (const auto& user : users) { user->displayProfile(); }
     }
     else localShowError();
     localPause();
