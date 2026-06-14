@@ -34,3 +34,24 @@ Since all of this cleans itself from memory when it's no longer in use, my class
   
 # UML Class Diagram
 <img width="1920" height="1080" alt="Copia de Copia de Pizarra online diagrama UML minimalista degradado naranja brillante amarillo pastel blanco" src="https://github.com/user-attachments/assets/df170c1e-a86c-4f11-b042-e19ef706142b" />
+
+# Project Structure
+
+**Main.cpp**
+It is the main file that handles everything. It checks if the .txt files (our database) already exist; if they don't, it creates them. After that, it opens the Menu so the program starts running.
+
+
+**User.h** 
+Here the type of user and the data required from them are defined. I made a parent class called User (with the ID, name, and password), and from there I created two child classes: Client (the residents) and Employee (the teachers). Inheritance is used here.
+
+**Activity.h**
+Here the data for the workshops provided by the nursing home is stored. Each activity has its ID, description, and schedule. The << operator is also used to print the class information to the console.
+
+**Menu.h**
+Here all the functions that are used are declared (register, delete, search, log in), and a list is created where the activities are saved. I also defined my custom error (FileOpenException) here.
+
+**Menu.cpp**
+In this file:
+* The information is opened, read, and saved into the .txt files.
+* I use polymorphism to go through my list of users and print their profiles, regardless of whether they are clients or employees.
+* Validations are made so people cannot enroll in a workshop if it is already full or if their schedules conflict.
