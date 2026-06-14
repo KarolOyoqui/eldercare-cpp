@@ -55,3 +55,68 @@ In this file:
 * The information is opened, read, and saved into the .txt files.
 * I use polymorphism to go through my list of users and print their profiles, regardless of whether they are clients or employees.
 * Validations are made so people cannot enroll in a workshop if it is already full or if their schedules conflict.
+
+# How to Run the Program & Expected Output
+Upon starting the system, you will be greeted by the Main Menu with two options:
+1. **Access Portal (Login):** Takes you to the user verification screen.
+2. **Shutdown System:** Safely exits the application.
+   <img width="787" height="202" alt="image" src="https://github.com/user-attachments/assets/3beffa9c-08ed-46c0-8101-0775964a6e4f" />
+
+The system features 3 different access levels (Admin, Employee, and Client), each handled by a unique ID and password. The system uses specific ID prefixes to identify roles and grant permissions:
+* **A** for **Administrators** (Full system access to modify data).
+* **T** for **Teachers/Employees** (Read-only access to their profile and classes).
+* **E** for **Clients** (Read-only access to their profile and enrolled activities).
+  <img width="786" height="206" alt="image" src="https://github.com/user-attachments/assets/be17af64-318d-44b8-b1a8-2db095c9ced6" />
+
+Here is how you can test each visibility level and the expected output:
+
+# 1. Administrator Level
+Use the following master credentials to access the Admin portal:
+* **ID:** A1234
+* **Password:** 1234
+
+**Expected Output / Capabilities:**
+The Admin menu will display 13 options, providing full management control over the system:
+1. **Register client:** Adds a new client (the system auto-generates their ID).
+2. **Register employee (Teacher):** Adds a new teacher and assigns them to a specific class.
+3. **Remove client:** Deletes a client by searching their ID.
+4. **Remove employee:** Deletes a teacher by searching their ID.
+5. **Modify client:** Searches for a client by ID to update their personal data.
+6. **Modify employee:** Searches for a teacher by ID to update their personal data.
+7. **List all clients:** Displays the profile info of all clients (passwords remain hidden for security).
+8. **List all employees:** Displays the profile info of all teachers (passwords remain hidden).
+9. **Search client:** Pulls up a specific client's data using their ID.
+10. **Search employee:** Pulls up a specific teacher's data and the class they teach.
+11. **Enroll Client in Activity:** Registers a client into a class (the system enforces a strict 20-person capacity limit).
+12. **List Activities & Status:** Displays details for each class and how many people are currently enrolled.
+13. **Log Out:** Returns to the main home screen.
+<img width="732" height="452" alt="image" src="https://github.com/user-attachments/assets/1b05ae1e-944b-4bbf-b759-f6b17f1cae9e" />
+
+---
+
+# 2. Client Level
+To test the client view, use any of the following pre-registered database accounts:
+* **ID:** E0001 | **Password:** juanito18
+* **ID:** E0002 | **Password:** elena51
+* **ID:** E0003 | **Password:** roberto44
+
+**Expected Output / Capabilities:**
+1. **View My Personal Profile & Registered Classes:** Displays the client's personal details and a list of the activities they are enrolled in.
+2. **Log Out:** Returns to the main home screen.
+<img width="907" height="265" alt="image" src="https://github.com/user-attachments/assets/92b9ec56-8718-453d-8754-f3d95f377c64" />
+<img width="1171" height="415" alt="image" src="https://github.com/user-attachments/assets/ed36439a-6e39-4c91-a08a-cbcbbe6e18b1" />
+
+---
+
+# 3. Employee (Teacher) Level
+To test the employee view, use any of the following pre-registered database accounts:
+* **ID:** T0001 | **Password:** profeRica
+* **ID:** T0002 | **Password:** laura90
+<img width="816" height="177" alt="image" src="https://github.com/user-attachments/assets/758a148e-81e1-47e3-9aed-1c04c7488bfe" />
+<img width="1007" height="395" alt="image" src="https://github.com/user-attachments/assets/1b63aade-5e9f-4fc6-a1ac-0db7261ea566" />
+
+
+**Expected Output / Capabilities:**
+1. **View My Personal Profile & Assigned Class:** Displays the teacher's personal details and the specific activity they are assigned to teach.
+2. **Log Out:** Returns to the main home screen.
+   
