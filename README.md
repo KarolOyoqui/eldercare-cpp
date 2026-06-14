@@ -56,6 +56,12 @@ In this file:
 * I use polymorphism to go through my list of users and print their profiles, regardless of whether they are clients or employees.
 * Validations are made so people cannot enroll in a workshop if it is already full or if their schedules conflict.
 
+# Build and Compilation Instructions
+To ensure the program compiles correctly with modern C++ standards and strict warnings (as required by the course), use the following command in your terminal:
+
+```bash
+g++ -std=c++14 -Wall Main.cpp Menu.cpp -o eldercare
+```
 # How to Run the Program & Expected Output
 Upon starting the system, you will be greeted by the Main Menu with two options:
 1. **Access Portal (Login):** Takes you to the user verification screen.
@@ -70,7 +76,7 @@ The system features 3 different access levels (Admin, Employee, and Client), eac
 
 Here is how you can test each visibility level and the expected output:
 
-# 1. Administrator Level
+1. Administrator Level
 Use the following master credentials to access the Admin portal:
 * **ID:** A1234
 * **Password:** 1234
